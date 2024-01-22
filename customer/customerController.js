@@ -1,65 +1,66 @@
-const user=require('./customerschema')
-const addData= (req,res)=>{
-    let data=user({
-        name:req.body.name,
-        mobile:req.body.mobile,
-        password:req.body.password
+const user = require('./customerschema')
+const addData = (req, res) => {
+    let data = user({
+        name: req.body.name,
+        email: req.body.email,
+        password: req.body.password
     })
-    data.save().then(data=>{
-     
-            res.json({
-                        status:200,
-                        msg:"account created",
-                        data:data
-                    })
+    data.save().then(data => {
+
+        res.json({
+            status: 200,
+            msg: "account created",
+            data: data
+        })
         console.log("Data saved")
-                }).catch(err=>{
-                    
-                        res.json({
-                                    status:500,
-                                    msg:"account not created"
-                                })
-                    
-                })
+    }).catch(err => {
+
+        res.json({
+            status: 500,
+            msg: "account not created"
+        })
+
+    })
 }
 
-const login= (req,res)=>{
-    user.findOne({password:req.body.password}).exec().then(data=>{
+const login = (req, res) => {
+    user.findOne({ password: req.body.password }).exec().then(data => {
         console.log(data);
-        if (data){
-        if(data.mobile==req.body.mobile||data.name==req.body.name){
-           
+        if (data) {
+            if (data.email == req.body.email || data.name == req.body.name) {
+
                 res.json({
-                    status:200,
-                    msg:"login sucessfully",
-                    data:data            
+                    status: 200,
+                    msg: "login sucessfully",
+                    data: data
                 })
             }
-            else{
+            else {
                 res.json({
-                    status:500,
-                    msg:"password mismatch"
-                    
-             
-                })
-            }}
-            else{
-                res.json({
-                    status:500,
-                    msg:"data not exit"
+                    status: 500,
+                    msg: "password mismatch"
+
+
                 })
             }
-     }) .catch(err=>{
-                res.json({
-                    status:500,
-                    msg:"login faild"
-                })
+        }
+        else {
+            res.json({
+                status: 500,
+                msg: "data not exit"
             })
         }
+    }).catch(err => {
+        res.json({
+            status: 500,
+            msg: "login faild"
+        })
+    })
+}
 
-       
-      
 
-       
-        
-module.exports={addData,login}
+
+
+
+
+module.exports = { addData, login }

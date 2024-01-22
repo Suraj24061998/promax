@@ -1,91 +1,70 @@
+// const user = require('./otp')
+// // const sentotp=async(email)=>{
+//   const sentotp = async (req, res) => {
+//   try{
+//     // const existinuser=await user.findOne({email})
+//     const existinuser = await user.findOne({ email: req.body.email });
+//     if(!existinuser){
+//       throw Error("error")
+//     }
+//     if(!existinuser.verified){
+//       throw Error("email change")
+//     }
+//     const otpdetails={
+//       email:req.body.email,
+//       subject:"passwordrest",
+//       msg:"creater error",
+//     }
+//     const createotp=await sentotp(otpdetails)
+//     return createotp
+//   } catch(error){
+//     throw error;
 
-
-// const forget=(req,res)=>{
-//     const{email}=req.body;
-//     UserModel.findone({email:email})
-//     .then(user=>{
-//         if(!user){
-//             return res.send({status:"user not existed"})
-//         }
-//         const token=jwt.sign({id:user._id},{expirIn:"id"})
-
-//         var nodemailer = require('nodemailer');
-
-// var transporter = nodemailer.createTransport({
-//   service: 'gmail',
-//   auth: {
-//     user: 'surajalpha2z@gmail.com',
-//     pass: 'suraj@1998'
 //   }
-// });
-
-// var mailOptions = {
-//   from: 'surajalpha2z@gmail.com',
-//   to: 'myfriend@yahoo.com',
-//   subject: 'Rest your password',
-//   text: `http://localhost:8080/forgot/${user._id}/${token}`
-// };
-
-// transporter.sendMail(mailOptions, function(error, info){
-//   if (error) {
-//     console.log(error);
-//   } else {
-//       return res.send({status:"sucess"});
-//   }
-// });
-
-//     })
 // }
 
 
+// module.exports={sentotp}
+const express = require('express');
+const router = express.Router();
+const user = require('./otp');
+const generateOtp = require('./forgetschmea');
 
 
-// module.exports={forget}
-const nodemailer = require('nodemailer');
-// const UserModel = require('path/to/UserModel');
-// Example assuming UserModel is a Mongoose model
-const UserModel = require('./forgetschmea');
-const { log } = require('console');
+router.use(express.json());
 
-
-const forget = async (req, res) => {
+router.post("/forgetpassword", async (req, res) => {
   try {
-    const { email } = req.body;
-    const user = await UserModel.findOne({ email: email });
-
-    if (!user) {
-      return res.send({ status: "user not existed" });
+  
+    if (!req.body || !req.body.email) {
+      throw new Error("Email is required in the request body");
     }
 
-    const token = jwt.sign({ id: user._id }, { expiresIn: "1h" });
+    const existinuser = await user.findOne({ email: req.body.email });
 
-    const nodemailer = require('nodemailer');
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: 'surajalpha2z@gmail.com',
-        pass: 'suraj@1998'
-      }
-    });
+    if (!existinuser) {
+      throw new Error("User not found");
+    }
 
-    const mailOptions = {
-      from: 'surajalpha2z@gmail.com',
-      to: 'sreeharialpha01@gmail.com',
-      subject: 'Reset your password',
-      text: `http://localhost:8080/forgot/${user._id}/${token}`
+    if (!existinuser.verified) {
+      throw new Error("Email not verified");
+    }
+
+    const otpdetails = {
+      email: req.body.email,
+      subject: "passwordrest",
+      msg: "create error",
     };
 
-    await transporter.sendMail(mailOptions);
+  
+    const createOtp = await generateOtp(otpdetails);
 
-    return res.send({ status: "success" });
+    return createOtp;
   } catch (error) {
-    console.error(error);
-    return res.status(500).send({ status: "error" });
+    res.status(400).json({ error: error.message });
   }
-};
+});
+
+module.exports = router;
 
 
-
-module.exports = { forget };
-
-console.log("forget ok");
